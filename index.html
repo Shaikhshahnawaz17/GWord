@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>word twist · guess the word</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background: linear-gradient(145deg, #1a2a3a 0%, #0f1a24 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.8rem;
+      overflow: hidden;
+    }
+
+    .game-container {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(22, 34, 45, 0.95);
+      backdrop-filter: blur(12px);
+      border-radius: 2rem;
+      padding: 1.5rem 1rem 1.5rem 1rem;
+      box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.8), inset 0 1px 3px rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      max-height: 95vh;
+    }
+
+    h1 {
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.5rem;
+      letter-spacing: 1px;
+      color: #eef5ff;
+      text-shadow: 0 4px 12px rgba(0, 180, 255, 0.4);
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    h1 span {
+      background: rgba(0, 255, 200, 0.15);
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 400;
+      border: 1px solid rgba(0, 255, 200, 0.3);
+      color: #b3ffe0;
+      text-transform: uppercase;
+    }
+
+    /* ---- SCREENS ---- */
+    .screen {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    /* ---- START SCREEN ---- */
+    .start-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 1.5rem;
+      padding: 1rem;
+    }
+
+    .start-icon {
+      font-size: 4rem;
+      margin-bottom: 0.5rem;
+      filter: drop-shadow(0 8px 20px rgba(0, 180, 255, 0.5));
+    }
+
+    .start-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .start-subtitle {
+      font-size: 1rem;
+      color: #8ba8c4;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 280px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(145deg, #2e7ab5, #1e5a8a);
+      border: none;
+      padding: 1rem 3rem;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #0e2d47, 0 8px 20px rgba(0, 0, 0, 0.5);
+      transition: 0.1s;
+      letter-spacing: 1px;
+      border: 1px solid #4d9fd6;
+      width: 100%;
+      max-width: 280px;
+      text-transform: uppercase;
+    }
+
+    .btn-primary:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #0e2d47;
+    }
+
+    /* ---- DIFFICULTY SCREEN ---- */
+    .difficulty-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .diff-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e0efff;
+      margin-bottom: 0.5rem;
+    }
+
+    .diff-btn {
+      background: #1e2f3f;
+      border: none;
+      padding: 1rem 1.5rem;
+      border-radius: 1.2rem;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #9bb7d4;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 5px 0 #0b131c, 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      width: 100%;
+      max-width: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
+    }
+
+    .diff-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #0b131c;
+    }
+
+    .diff-btn .badge {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #6f8ca8;
+      background: #0e1922;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+
+    .diff-btn.active {
+      background: #2e577a;
+      color: #ffffff;
+      box-shadow: 0 2px 0 #0f1e2b, 0 0 20px rgba(0, 200, 255, 0.2);
+      border-color: #4d9fd6;
+    }
+
+    /* ---- GAME SCREEN ---- */
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      background: #0e1922;
+      border-radius: 80px;
+      padding: 0.5rem 1.2rem;
+      margin-bottom: 0.8rem;
+      border: 1px solid #233544;
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+      color: #b7d9ff;
+      font-weight: 500;
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .points {
+      background: #1f3e55;
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      color: #c6e9ff;
+      font-weight: 700;
+      border: 1px solid #2e6b91;
+    }
+
+    /* ---- GRID ---- */
+    .grid-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.8rem;
+      padding: 0.2rem 0;
+      overflow-x: auto;
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    .grid-row {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .grid-cell {
+      width: 2.8rem;
+      height: 2.8rem;
+      background: #16232e;
+      border-radius: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #ffffff;
+      box-shadow: inset 0 -3px 0 #0c141c, 0 3px 8px rgba(0, 0, 0, 0.5);
+      border: 1px solid #2f4a5e;
+      transition: 0.1s;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+      flex-shrink: 0;
+    }
+
+    .grid-cell.filled {
+      background: #1d3244;
+      border-color: #3d6d8c;
+      color: #d0eaff;
+    }
+
+    .grid-cell.correct {
+      background: #1e7e5c;
+      border-color: #3be0a0;
+      color: #ffffff;
+      box-shadow: inset 0 -3px 0 #0b3d2c, 0 0 10px #1e7e5c80;
+    }
+
+    .grid-cell.present {
+      background: #b68b2c;
+      border-color: #f5c542;
+      color: #1e1a0c;
+      box-shadow: inset 0 -3px 0 #6b4f14, 0 0 10px #b68b2c80;
+    }
+
+    .grid-cell.absent {
+      background: #2a2f36;
+      border-color: #3d434b;
+      color: #6b7a8b;
+      box-shadow: inset 0 -3px 0 #12171c;
+    }
+
+    /* ---- ON-SCREEN KEYBOARD ---- */
+    .keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      margin: 0.3rem 0 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .keyboard-row {
+      display: flex;
+      justify-content: center;
+      gap: 0.25rem;
+      flex-wrap: nowrap;
+    }
+
+    .key {
+      background: #1d2e3c;
+      border: none;
+      width: 2rem;
+      height: 2.6rem;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #d0e7ff;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #0b131c, 0 2px 6px black;
+      transition: 0.05s linear;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #2d4a5e;
+      font-family: inherit;
+      padding: 0;
+      touch-action: manipulation;
+    }
+
+    .key:active {
+      transform: translateY(3px);
+      box-shadow: 0 0px 0 #0b131c;
+    }
+
+    .key.correct {
+      background: #1e7e5c;
+      color: white;
+      box-shadow: 0 3px 0 #0b3d2c;
+      border-color: #3be0a0;
+    }
+
+    .key.present {
+      background: #b68b2c;
+      color: #1e1a0c;
+      box-shadow: 0 3px 0 #6b4f14;
+      border-color: #f5c542;
+    }
+
+    .key.absent {
+      background: #2a2f36;
+      color: #5f6b7a;
+      box-shadow: 0 3px 0 #12171c;
+      border-color: #313941;
+      opacity: 0.6;
+    }
+
+    .key.wide {
+      width: auto;
+      padding: 0 0.6rem;
+      font-size: 0.75rem;
+      background: #264257;
+      box-shadow: 0 3px 0 #0e1a22;
+      color: #c2dcff;
+      letter-spacing: 0.3px;
+      min-width: 3.5rem;
+    }
+
+    /* ---- HINTS ---- */
+    .hint-section {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .hint-btn {
+      background: #2e4b62;
+      border: none;
+      padding: 0.5rem 0.8rem;
+      border-radius: 50px;
+      font-weight: 600;
+      color: #e3f0ff;
+      font-size: 0.75rem;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #10212e, 0 4px 8px black;
+      transition: 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      border: 1px solid #40749b;
+      flex: 1;
+      justify-content: center;
+      touch-action: manipulation;
+    }
+
+    .hint-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #10212e;
+    }
+
+    .hint-btn:disabled {
+      opacity: 0.4;
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #10212e;
+      pointer-events: none;
+      filter: grayscale(0.6);
+    }
+
+    /* ---- MESSAGE ---- */
+    .message {
+      text-align: center;
+      margin: 0.4rem 0 0.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      min-height: 1.8rem;
+      color: #b1e6ff;
+      text-shadow: 0 2px 10px rgba(0, 180, 255, 0.5);
+      letter-spacing: 0.2px;
+      flex-shrink: 0;
+    }
+
+    .reset-btn {
+      background: #2d3f50;
+      border: none;
+      margin-top: 0.3rem;
+      padding: 0.6rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 600;
+      color: #c2d9f0;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #101b24;
+      transition: 0.1s;
+      width: 100%;
+      font-size: 0.9rem;
+      border: 1px solid #486177;
+      touch-action: manipulation;
+      flex-shrink: 0;
+    }
+
+    .reset-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #101b24;
+    }
+
+    /* Back to difficulty button (shown on win) */
+    .back-diff-btn {
+      background: linear-gradient(145deg, #2e7ab5, #1e5a8a);
+      border: none;
+      margin-top: 0.5rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #0e2d47, 0 6px 14px rgba(0, 0, 0, 0.4);
+      transition: 0.1s;
+      width: 100%;
+      font-size: 0.95rem;
+      border: 1px solid #4d9fd6;
+      touch-action: manipulation;
+      flex-shrink: 0;
+      display: none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .back-diff-btn.visible {
+      display: block;
+    }
+
+    .back-diff-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #0e2d47;
+    }
+
+    .footer-note {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.55rem;
+      color: #6f8ca8;
+      margin-top: 0.5rem;
+      letter-spacing: 0.2px;
+      flex-shrink: 0;
+    }
+
+    /* small screens */
+    @media (max-width: 380px) {
+      .grid-cell { width: 2.3rem; height: 2.3rem; font-size: 1.1rem; border-radius: 0.5rem; }
+      .key { width: 1.7rem; height: 2.2rem; font-size: 0.75rem; }
+      .key.wide { min-width: 3rem; font-size: 0.65rem; padding: 0 0.4rem; }
+      .game-container { padding: 0.8rem 0.5rem; }
+      h1 { font-size: 1.2rem; }
+    }
+
+    @media (max-height: 700px) {
+      .grid-cell { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; }
+      .key { width: 1.7rem; height: 2.2rem; font-size: 0.75rem; }
+      .key.wide { min-width: 3rem; font-size: 0.65rem; }
+      .game-container { padding: 0.8rem 0.6rem; }
+      h1 { font-size: 1.2rem; margin-bottom: 0.4rem; }
+      .stats-bar { padding: 0.3rem 0.8rem; font-size: 0.8rem; margin-bottom: 0.4rem; }
+      .message { font-size: 0.8rem; min-height: 1.4rem; margin: 0.2rem 0; }
+      .hint-btn { font-size: 0.65rem; padding: 0.3rem 0.5rem; }
+      .reset-btn { font-size: 0.8rem; padding: 0.4rem 1rem; }
+      .back-diff-btn { font-size: 0.85rem; padding: 0.5rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+
+  <!-- ============ SCREEN 1: START ============ -->
+  <div class="screen active" id="startScreen">
+    <div class="start-content">
+      <div class="start-icon">🔤</div>
+      <div class="start-title">WORD TWIST</div>
+      <div class="start-subtitle">Guess the hidden word. Green = correct spot, Yellow = wrong spot.</div>
+      <button class="btn-primary" id="startBtn">START GAME</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2: DIFFICULTY ============ -->
+  <div class="screen" id="difficultyScreen">
+    <div class="difficulty-content">
+      <div class="diff-title">CHOOSE DIFFICULTY</div>
+      <button class="diff-btn active" data-mode="easy">
+        <span>🟢 EASY</span>
+        <span class="badge">4 letters · 5 tries</span>
+      </button>
+      <button class="diff-btn" data-mode="medium">
+        <span>🟡 MEDIUM</span>
+        <span class="badge">5 letters · 6 tries</span>
+      </button>
+      <button class="diff-btn" data-mode="hard">
+        <span>🔴 HARD</span>
+        <span class="badge">6 letters · 7 tries</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3: GAME ============ -->
+  <div class="screen" id="gameScreen">
+    <h1>🔤 WORD TWIST <span id="modeLabel">EASY</span></h1>
+
+    <div class="stats-bar">
+      <span>💎 POINTS: <span class="points" id="pointsDisplay">0</span></span>
+      <span>🎯 ROW <span id="rowDisplay">1</span>/<span id="maxRowDisplay">5</span></span>
+    </div>
+
+    <div class="grid-container" id="gridContainer"></div>
+    <div class="keyboard" id="keyboard"></div>
+
+    <div class="hint-section">
+      <button class="hint-btn" id="hintLetterBtn">🔍 REVEAL (50)</button>
+      <button class="hint-btn" id="hintExtraBtn">📖 HINT (40)</button>
+    </div>
+
+    <div class="message" id="messageBox">type a word & press enter</div>
+
+    <button class="reset-btn" id="resetBtn">↻ NEW WORD</button>
+    <button class="back-diff-btn" id="backDiffBtn">🎯 CHOOSE DIFFICULTY</button>
+
+    <div class="footer-note">
+      <span>⚡ easy · medium · hard</span>
+      <span>💎 +10 yellow · +15 green</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function() {
+    // ---------- WORD LISTS (EXACT lengths per mode) ----------
+    const WORDS = {
+      easy: [
+        'time','year','way','day','man','life','hand','part','child','eye','place','work','week','case',
+        'point','group','fact','number','world','book','word','house','room','door','food','water','fire',
+        'light','dark','game','play','love','hope','mind','song','road','tree','fish','bird','gold','moon'
+      ],
+      medium: [
+        'about','above','across','after','again','against','almost','alone','along','already','among',
+        'around','because','before','behind','below','between','beyond','bring','build','carry','catch',
+        'cause','change','clear','close','color','could','country','course','cover','create','decide',
+        'detail','early','earth','effect','evening','every','field','fight','final','focus','force','front',
+        'green','group','happy','heart','horse','house','large','laugh','learn','leave','legal','level',
+        'light','limit','local','major','maybe','might','money','month','music','never','night'
+      ],
+      hard: [
+        'absolute','academic','accepted','accident','accurate','achieved','acquire','actually','addition',
+        'adequate','adjusted','advanced','advisory','advocate','afford','aircraft','allocate','although',
+        'amazing','analysis','announce','anything','apparent','approach','argument','assembly','assess',
+        'assign','assist','assume','athletic','atlantic','attitude','attract','auction','available','balance',
+        'barrier','battery','benefit','bicycle','brother','cabinet','capital','captain','careful','central',
+        'certain','chamber','chapter','charity','chicken','citizen','classic','climate','clothing','collect',
+        'college','combine','command','comment','common','company','compare','compete','complex','concept',
+        'concern','conduct','confirm','connect','consent','consider','consist','contact','contain','content',
+        'contest','context','control','convert','correct','council','country','courage','culture','current'
+      ]
+    };
+
+    // ---------- HINTS ----------
+    const HINTS = {
+      easy: {
+        'time':'clock / hours','year':'12 months','way':'path / method','day':'24 hours','man':'adult male',
+        'life':'existence','hand':'body part','part':'piece','child':'young person','eye':'sight organ',
+        'place':'location','work':'job / labor','week':'7 days','case':'situation / box','point':'dot / score',
+        'group':'collection','fact':'truth','number':'digit','world':'earth','book':'read pages','word':'letters',
+        'house':'home','room':'space in building','door':'entrance','food':'eat','water':'drink','fire':'flames',
+        'light':'not heavy / bright','dark':'no light','game':'play','play':'have fun','love':'deep affection',
+        'hope':'wish','mind':'brain','song':'music','road':'street','tree':'plant','fish':'swims','bird':'flies',
+        'gold':'precious metal','moon':'night sky'
+      },
+      medium: {
+        'about':'roughly','above':'over','across':'from side to side','after':'later than','again':'once more',
+        'against':'opposed to','almost':'nearly','alone':'by oneself','along':'beside','already':'before now',
+        'among':'in the middle of','around':'surrounding','because':'for the reason','before':'earlier',
+        'behind':'at the back','below':'under','between':'in the middle','beyond':'further than','bring':'carry here',
+        'build':'construct','carry':'transport','catch':'grab','cause':'make happen','change':'make different',
+        'clear':'transparent / obvious','close':'near / shut','color':'hue','could':'past of can','country':'nation',
+        'course':'direction / class','cover':'put over','create':'make','decide':'make a choice','detail':'small part',
+        'early':'before time','earth':'planet','effect':'result','evening':'afternoon / night','every':'each',
+        'field':'open land','fight':'battle','final':'last','focus':'concentrate','force':'power','front':'forward part',
+        'green':'color','group':'collection','happy':'joyful','heart':'body organ','horse':'animal','house':'home',
+        'large':'big','laugh':'sound of joy','learn':'study','leave':'go away','legal':'lawful','level':'flat / stage',
+        'light':'bright / not heavy','limit':'boundary','local':'nearby','major':'important','maybe':'perhaps',
+        'might':'power / may','money':'currency','month':'30 days','music':'melody','never':'not ever',
+        'night':'dark time'
+      },
+      hard: {
+        'absolute':'complete','academic':'scholarly','accepted':'approved','accident':'unplanned event',
+        'accurate':'precise','achieved':'accomplished','acquire':'get','actually':'in fact','addition':'adding',
+        'adequate':'enough','adjusted':'adapted','advanced':'far ahead','advisory':'warning','advocate':'support',
+        'afford':'have money for','aircraft':'flying vehicle','allocate':'distribute','although':'even though',
+        'amazing':'wonderful','analysis':'examination','announce':'declare','anything':'any object',
+        'apparent':'seems true','approach':'come near','argument':'disagreement','assembly':'gathering',
+        'assess':'evaluate','assign':'give task','assist':'help','assume':'suppose','athletic':'sporty',
+        'atlantic':'ocean','attitude':'mindset','attract':'draw in','auction':'bid sale','available':'ready to use',
+        'balance':'equilibrium','barrier':'obstacle','battery':'power source','benefit':'advantage',
+        'bicycle':'two-wheeler','brother':'sibling','cabinet':'storage','capital':'main city','captain':'leader',
+        'careful':'cautious','central':'main','certain':'sure','chamber':'room','chapter':'book section',
+        'charity':'giving','chicken':'bird / food','citizen':'resident','classic':'timeless','climate':'weather',
+        'clothing':'garments','collect':'gather','college':'university','combine':'merge','command':'order',
+        'comment':'remark','common':'usual','company':'business','compare':'contrast','compete':'rival',
+        'complex':'complicated','concept':'idea','concern':'worry','conduct':'behavior','confirm':'verify',
+        'connect':'join','consent':'permission','consider':'think about','consist':'composed of','contact':'touch',
+        'contain':'hold','content':'substance','contest':'competition','context':'background','control':'manage',
+        'convert':'change','correct':'right','council':'committee','country':'nation','courage':'bravery',
+        'culture':'customs','current':'present'
+      }
+    };
+
+    function getHintForWord(word, mode) {
+      const h = HINTS[mode];
+      if (h && h[word]) return h[word];
+      return `starts with "${word[0].toUpperCase()}" · ${word.length} letters`;
+    }
+
+    // ---------- GAME STATE ----------
+    let currentMode = 'easy';
+    let secretWord = '';
+    let wordLength = 4;
+    let maxGuesses = 5;
+    let currentRow = 0;
+    let currentGuess = '';
+    let gameOver = false;
+    let playerWon = false;
+    let points = 0;
+    let gridData = [];
+    let letterStatuses = {};
+
+    // DOM
+    const startScreen = document.getElementById('startScreen');
+    const difficultyScreen = document.getElementById('difficultyScreen');
+    const gameScreen = document.getElementById('gameScreen');
+    const startBtn = document.getElementById('startBtn');
+    const diffBtns = document.querySelectorAll('.diff-btn');
+    const modeLabel = document.getElementById('modeLabel');
+    const gridContainer = document.getElementById('gridContainer');
+    const keyboardEl = document.getElementById('keyboard');
+    const pointsDisplay = document.getElementById('pointsDisplay');
+    const rowDisplay = document.getElementById('rowDisplay');
+    const maxRowDisplay = document.getElementById('maxRowDisplay');
+    const messageBox = document.getElementById('messageBox');
+    const resetBtn = document.getElementById('resetBtn');
+    const backDiffBtn = document.getElementById('backDiffBtn');
+    const hintLetterBtn = document.getElementById('hintLetterBtn');
+    const hintExtraBtn = document.getElementById('hintExtraBtn');
+
+    // ---------- SCREEN NAVIGATION ----------
+    function showScreen(screen) {
+      startScreen.classList.remove('active');
+      difficultyScreen.classList.remove('active');
+      gameScreen.classList.remove('active');
+      screen.classList.add('active');
+    }
+
+    startBtn.addEventListener('click', () => {
+      showScreen(difficultyScreen);
+    });
+
+    diffBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        diffBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        showScreen(gameScreen);
+        startNewGame(currentMode);
+      });
+    });
+
+    // Back to difficulty from win screen
+    backDiffBtn.addEventListener('click', () => {
+      backDiffBtn.classList.remove('visible');
+      showScreen(difficultyScreen);
+    });
+
+    // ---------- UTILS ----------
+    function getRandomWord(mode) {
+      const list = WORDS[mode];
+      const word = list[Math.floor(Math.random() * list.length)];
+      const expectedLen = mode === 'easy' ? 4 : mode === 'medium' ? 5 : 6;
+      if (word.length !== expectedLen) {
+        const filtered = list.filter(w => w.length === expectedLen);
+        return filtered[Math.floor(Math.random() * filtered.length)];
+      }
+      return word;
+    }
+
+    function updatePointsUI() { pointsDisplay.textContent = points; }
+    function updateRowUI() {
+      rowDisplay.textContent = Math.min(currentRow + 1, maxGuesses);
+      maxRowDisplay.textContent = maxGuesses;
+    }
+
+    // ---------- GRID RENDERING ----------
+    function renderGrid() {
+      gridContainer.innerHTML = '';
+      for (let r = 0; r < maxGuesses; r++) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'grid-row';
+        for (let c = 0; c < wordLength; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          const letter = gridData[r]?.[c] || '';
+          cell.textContent = letter.toUpperCase();
+
+          if (r < currentRow) {
+            const status = getCellStatus(r, c);
+            if (status === 'correct') cell.classList.add('correct');
+            else if (status === 'present') cell.classList.add('present');
+            else if (status === 'absent') cell.classList.add('absent');
+          } else if (r === currentRow) {
+            if (letter) cell.classList.add('filled');
+          }
+
+          // If player won, force ALL cells in the winning row to be green
+          if (playerWon && r === currentRow) {
+            cell.classList.remove('filled', 'present', 'absent');
+            cell.classList.add('correct');
+          }
+
+          rowDiv.appendChild(cell);
+        }
+        gridContainer.appendChild(rowDiv);
+      }
+    }
+
+    // Standard Wordle logic with proper letter counting
+    function getCellStatus(row, col) {
+      const guessLetter = (gridData[row]?.[col] || '').toLowerCase();
+      if (!guessLetter) return 'absent';
+
+      const secretLower = secretWord.toLowerCase();
+      const guessLetters = (gridData[row] || []).map(l => l.toLowerCase());
+      const secretLetters = secretLower.split('');
+
+      const secretCount = {};
+      for (let ch of secretLetters) secretCount[ch] = (secretCount[ch] || 0) + 1;
+
+      const statuses = Array(wordLength).fill('absent');
+
+      for (let i = 0; i < wordLength; i++) {
+        if (guessLetters[i] === secretLetters[i]) {
+          statuses[i] = 'correct';
+          secretCount[guessLetters[i]]--;
+        }
+      }
+      for (let i = 0; i < wordLength; i++) {
+        if (statuses[i] === 'correct') continue;
+        const ch = guessLetters[i];
+        if (secretCount[ch] > 0) {
+          statuses[i] = 'present';
+          secretCount[ch]--;
+        }
+      }
+      return statuses[col];
+    }
+
+    // ---------- KEYBOARD ----------
+    function renderKeyboard() {
+      const rows = [
+        ['q','w','e','r','t','y','u','i','o','p'],
+        ['a','s','d','f','g','h','j','k','l'],
+        ['z','x','c','v','b','n','m']
+      ];
+      keyboardEl.innerHTML = '';
+      rows.forEach((row, rowIndex) => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'keyboard-row';
+        row.forEach(letter => {
+          const key = document.createElement('button');
+          key.className = 'key';
+          key.textContent = letter.toUpperCase();
+          if (letterStatuses[letter] === 'correct') key.classList.add('correct');
+          else if (letterStatuses[letter] === 'present') key.classList.add('present');
+          else if (letterStatuses[letter] === 'absent') key.classList.add('absent');
+          key.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleVirtualKey(letter);
+          });
+          rowDiv.appendChild(key);
+        });
+        if (rowIndex === 2) {
+          const enterBtn = document.createElement('button');
+          enterBtn.className = 'key wide';
+          enterBtn.textContent = '↵';
+          enterBtn.addEventListener('click', (e) => { e.preventDefault(); submitGuess(); });
+          rowDiv.appendChild(enterBtn);
+
+          const backBtn = document.createElement('button');
+          backBtn.className = 'key wide';
+          backBtn.textContent = '⌫';
+          backBtn.addEventListener('click', (e) => { e.preventDefault(); deleteLetter(); });
+          rowDiv.appendChild(backBtn);
+        }
+        keyboardEl.appendChild(rowDiv);
+      });
+    }
+
+    function updateKeyboardStatuses(row) {
+      const guessLetters = (gridData[row] || []).map(l => l.toLowerCase());
+      for (let i = 0; i < wordLength; i++) {
+        const ch = guessLetters[i];
+        if (!ch) continue;
+        const status = getCellStatus(row, i);
+        const current = letterStatuses[ch];
+        if (status === 'correct') letterStatuses[ch] = 'correct';
+        else if (status === 'present' && current !== 'correct') letterStatuses[ch] = 'present';
+        else if (status === 'absent' && !current) letterStatuses[ch] = 'absent';
+      }
+    }
+
+    // ---------- GAME LOGIC ----------
+    function startNewGame(mode) {
+      if (mode) currentMode = mode;
+      modeLabel.textContent = currentMode.toUpperCase();
+
+      if (currentMode === 'easy') { wordLength = 4; maxGuesses = 5; }
+      else if (currentMode === 'medium') { wordLength = 5; maxGuesses = 6; }
+      else { wordLength = 6; maxGuesses = 7; }
+
+      secretWord = getRandomWord(currentMode);
+      if (secretWord.length !== wordLength) {
+        const filtered = WORDS[currentMode].filter(w => w.length === wordLength);
+        secretWord = filtered[Math.floor(Math.random() * filtered.length)];
+      }
+
+      currentRow = 0;
+      currentGuess = '';
+      gameOver = false;
+      playerWon = false;
+      letterStatuses = {};
+      gridData = Array.from({ length: maxGuesses }, () => Array(wordLength).fill(''));
+
+      // Hide the back-to-difficulty button when starting new game
+      backDiffBtn.classList.remove('visible');
+
+      updateRowUI();
+      renderGrid();
+      renderKeyboard();
+      messageBox.textContent = `guess the ${wordLength}-letter word`;
+      hintLetterBtn.disabled = false;
+      hintExtraBtn.disabled = false;
+    }
+
+    function handleVirtualKey(letter) {
+      if (gameOver) return;
+      if (currentGuess.length >= wordLength) return;
+      currentGuess += letter;
+      const idx = currentGuess.length - 1;
+      gridData[currentRow][idx] = letter;
+      renderGrid();
+    }
+
+    function deleteLetter() {
+      if (gameOver) return;
+      if (currentGuess.length === 0) return;
+      currentGuess = currentGuess.slice(0, -1);
+      gridData[currentRow][currentGuess.length] = '';
+      renderGrid();
+    }
+
+    function submitGuess() {
+      if (gameOver) return;
+      if (currentGuess.length !== wordLength) {
+        messageBox.textContent = `⚠️ word must be ${wordLength} letters`;
+        return;
+      }
+
+      for (let i = 0; i < wordLength; i++) {
+        gridData[currentRow][i] = currentGuess[i] || '';
+      }
+
+      // Award points
+      let earned = 0;
+      for (let c = 0; c < wordLength; c++) {
+        const status = getCellStatus(currentRow, c);
+        if (status === 'correct') earned += 15;
+        else if (status === 'present') earned += 10;
+      }
+      points += earned;
+      updatePointsUI();
+
+      updateKeyboardStatuses(currentRow);
+
+      // Win check
+      if (currentGuess.toLowerCase() === secretWord.toLowerCase()) {
+        gameOver = true;
+        playerWon = true;
+        const remainingRows = maxGuesses - (currentRow + 1);
+        const bonus = 100 + (remainingRows * 50);
+        points += bonus;
+        updatePointsUI();
+
+        // Re-render to force all green in the winning row
+        renderGrid();
+        renderKeyboard();
+        messageBox.textContent = `🎉 YOU WIN! +${earned} pts + ${bonus} bonus!`;
+
+        hintLetterBtn.disabled = true;
+        hintExtraBtn.disabled = true;
+        // Show the choose difficulty button
+        backDiffBtn.classList.add('visible');
+        return;
+      }
+
+      currentRow++;
+      currentGuess = '';
+
+      if (currentRow >= maxGuesses) {
+        gameOver = true;
+        playerWon = false;
+        messageBox.textContent = `💀 GAME OVER · word was "${secretWord.toUpperCase()}"`;
+        renderGrid();
+        renderKeyboard();
+        hintLetterBtn.disabled = true;
+        hintExtraBtn.disabled = true;
+        // Also show the button on game over so player can switch mode
+        backDiffBtn.classList.add('visible');
+        return;
+      }
+
+      updateRowUI();
+      renderGrid();
+      renderKeyboard();
+      messageBox.textContent = `+${earned} pts · keep going!`;
+    }
+
+    // ---------- HINTS ----------
+    function revealLetterHint() {
+      if (gameOver) return;
+      if (points < 50) { messageBox.textContent = '⚠️ need 50 points'; return; }
+
+      const emptyIndices = [];
+      for (let c = 0; c < wordLength; c++) {
+        if (!gridData[currentRow][c]) emptyIndices.push(c);
+      }
+      if (emptyIndices.length === 0) { messageBox.textContent = '✨ row is full'; return; }
+
+      points -= 50;
+      updatePointsUI();
+
+      const idx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      const correctLetter = secretWord[idx].toLowerCase();
+
+      const currentChars = [];
+      for (let i = 0; i < wordLength; i++) {
+        currentChars[i] = gridData[currentRow][i] || '';
+      }
+      currentChars[idx] = correctLetter;
+      for (let i = 0; i < wordLength; i++) {
+        gridData[currentRow][i] = currentChars[i];
+      }
+      currentGuess = currentChars.join('');
+
+      renderGrid();
+      messageBox.textContent = `🔍 revealed "${correctLetter.toUpperCase()}" at ${idx+1} (-50)`;
+    }
+
+    function showHint() {
+      if (gameOver) return;
+      if (points < 40) { messageBox.textContent = '⚠️ need 40 points'; return; }
+      points -= 40;
+      updatePointsUI();
+      messageBox.textContent = `💡 ${getHintForWord(secretWord, currentMode)} (-40)`;
+    }
+
+    // ---------- PHYSICAL KEYBOARD ----------
+    document.addEventListener('keydown', (e) => {
+      if (!gameScreen.classList.contains('active')) return;
+      if (gameOver) return;
+
+      const key = e.key;
+      if (key === 'Enter') {
+        e.preventDefault();
+        submitGuess();
+      } else if (key === 'Backspace') {
+        e.preventDefault();
+        deleteLetter();
+      } else if (/^[a-zA-Z]$/.test(key)) {
+        e.preventDefault();
+        handleVirtualKey(key.toLowerCase());
+      }
+    });
+
+    // ---------- RESET ----------
+    resetBtn.addEventListener('click', () => {
+      startNewGame(currentMode);
+    });
+
+    hintLetterBtn.addEventListener('click', (e) => { e.preventDefault(); revealLetterHint(); });
+    hintExtraBtn.addEventListener('click', (e) => { e.preventDefault(); showHint(); });
+
+    // ---------- INIT ----------
+    showScreen(startScreen);
+    points = 0;
+    updatePointsUI();
+
+  })();
+</script>
+</body>
+</html>
